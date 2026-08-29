@@ -1,7 +1,9 @@
 import os
 import threading
-from google import genai
-from google.genai import types
+import json
+import base64
+import requests
+
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.textinput import TextInput
@@ -22,8 +24,7 @@ class CruiseAIApp(App):
         self.selected_image_path = None
         
         # Hardcoded API Key
-        api_key = "AQ.Ab8RN6JgLKuit_qggktnuGXSdc_ufG5_wwpRsGrU9dOl90K4yQ"
-        self.client = genai.Client(api_key=api_key)
+        self.api_key = "AQ.Ab8RN6JgLKuit_qggktnuGXSdc_ufG5_wwpRsGrU9dOl90K4yQ"
 
         # Scrollable Chat Display
         self.scroll = ScrollView(size_hint=(1, 0.65))
@@ -120,25 +121,39 @@ class CruiseAIApp(App):
 
     def get_ai_response(self, user_text, image_path=None):
         try:
-            if image_path and os.path.exists(image_path):
-                with open(image_path, "rb") as f:
-                    img_bytes = f.read()
-                
-                response = self.client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=[
-                        types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
-                        f"You are Cruise AI by {self.creator_name}. Describe and analyze this image: {user_text}"
-                    ]
-                )
-            else:
-                system_prompt = f"You are Cruise AI, created by {self.creator_name}. Answer this: {user_text}"
-                response = self.client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=system_prompt
-                )
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+            headers = {'Content-Type': 'application/json'}
             
-            reply = response.text
+            parts = []
+            if image_path and os.path.exists(image_path):
+                with open(image_path, "rb") as image_file:
+                    encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                parts.append({
+                    "inline_data": {
+                        "mime_type": "image/jpeg",
+                        "data": encoded_string
+                    }
+                })
+                parts.append({"text": f"You are Cruise AI by {self.creator_name}. Describe and analyze this image: {user_text}"})
+            else:
+                parts.append({"text": f"You are Cruise AI, created by {self.creator_name}. Answer this: {user_text}"})
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": parts
+                    }
+                ]
+            }
+
+            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            res_json = response.json()
+            
+            if "candidates" in res_json:
+                reply = res_json["candidates"][0]["content"]["parts"][0]["text"]
+            else:
+                reply = f"API Error: {res_json.get('error', {}).get('message', 'Unknown response error')}"
+
             Clock.schedule_once(lambda dt: self.update_chat("Cruise AI", reply))
             self.speak(reply[:150])
         except Exception as e:
@@ -189,4 +204,4 @@ class CruiseAIApp(App):
 
 if __name__ == '__main__':
     CruiseAIApp().run()
-            
+    
