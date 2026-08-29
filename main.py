@@ -21,9 +21,11 @@ class CruiseAIApp(App):
         self.log_file = "cruise_chat_history.txt"
         self.selected_image_path = None
         
+        # Hardcoded API Key
         api_key = "AQ.Ab8RN6JgLKuit_qggktnuGXSdc_ufG5_wwpRsGrU9dOl90K4yQ"
         self.client = genai.Client(api_key=api_key)
 
+        # Scrollable Chat Display
         self.scroll = ScrollView(size_hint=(1, 0.65))
         self.chat_label = Label(
             text=f"[color=00FFFF][b]Cruise AI Active[/b][/color] | Created by {self.creator_name}\n\n",
@@ -38,6 +40,7 @@ class CruiseAIApp(App):
         self.scroll.add_widget(self.chat_label)
         layout.add_widget(self.scroll)
 
+        # Button Row 1
         btn_layout1 = BoxLayout(orientation='horizontal', size_hint=(1, 0.08), spacing=5)
         
         mus_btn = Button(text="30s Music Spec", background_color=(0.1, 0.6, 0.6, 1))
@@ -54,6 +57,7 @@ class CruiseAIApp(App):
 
         layout.add_widget(btn_layout1)
 
+        # Button Row 2
         btn_layout2 = BoxLayout(orientation='horizontal', size_hint=(1, 0.08), spacing=5)
 
         save_btn = Button(text="Save Log", background_color=(0.2, 0.7, 0.3, 1))
@@ -66,6 +70,7 @@ class CruiseAIApp(App):
 
         layout.add_widget(btn_layout2)
 
+        # Text Input Row
         input_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.09), spacing=5)
         
         self.text_input = TextInput(
@@ -184,4 +189,4 @@ class CruiseAIApp(App):
 
 if __name__ == '__main__':
     CruiseAIApp().run()
-      
+    
