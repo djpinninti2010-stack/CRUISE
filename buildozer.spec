@@ -9,7 +9,7 @@ source.include_exts = py,png,jpg,kv,atlas
 
 version = 0.1
 
-requirements = python3,kivy,google-genai,plyer
+requirements = python3,kivy,requests,urllib3,certifi,charset_normalizer,idna,openssl,plyer
 
 orientation = portrait
 fullscreen = 0
